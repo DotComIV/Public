@@ -1,0 +1,78 @@
+Как развернуть git в linux для существующего локально проекта c использованием SSH-ключей.
+
+
+Настроить конфигурацию git:
+
+git config --global user.name Логин_на_гитхабе
+git config --global user.email johndoe@example.com
+
+Если вы собираетесь начать использовать Git для существующего проекта, 
+то вам необходимо перейти в проектный каталог и в командной строке ввести
+
+git init
+
+добавить под версионный контроль существующие файлы:
+
+git add --all 
+git commit -m 'здесь какой-нибудь комментарий'
+
+Создать репозиторий на github: https://github.com/new,
+в аккаунте 'user.name'
+
+В каталоге ~/.ssh/ каталога пользователя создать секретный SSH ключ:
+
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+
+Запустить SSH-агент:
+
+eval "$(ssh-agent -s)"
+
+Добавить ключ в SSH-агент:
+
+ssh-add ~/.ssh/файл_ключа
+
+Создать в каталоге .ssh в домашнем каталоге пользователя файл config с таким содержимым:
+
+Host github.com-Логин_на_гитхабе
+    HostName github.com
+    User текущий_пользователь_линукс
+    IdentityFile ~/.ssh/файл_приватного_ключа (без расширения который)
+
+Установите следующие права: chmod 600 ~/.ssh/config (важно!)
+
+Создать на гитхабе SSH-ключ и вставить туда содержимое файла публичного ключа.
+
+
+Добавить удаленный репозиторий:
+
+git remote add имя-репозитория git@github.com:логин-на-хабе/имя-репозитория.git
+
+Проверить:
+
+git remote show имя-репозитория
+
+Если будет выдано подобное сообщение:
+
+The authenticity of host 'github.com (192.30.***.***)' can't be established.
+RSA key fingerprint is блаблабла.
+Are you sure you want to continue connecting (yes/no)? no
+
+- вводим 'no' и редактируем список известных хостов:
+
+ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+Отправляем наши данные в удаленный репозиторий:
+
+git push имя_репозитория master
+
+Voila!
+
+
+Для того, чтобы развернуть локально удаленный репозиторий:
+
+git clone git@github.com:user/myproject.git
+(перед этим нужно добавить существующий ключ в SSH-агент, каки описано выше)
+
+Клонирование удаленной ветки:
+
+git clone -b my-branch git@github.com:user/myproject.git
